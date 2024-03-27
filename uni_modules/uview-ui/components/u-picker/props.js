@@ -74,6 +74,22 @@ export default {
 		immediateChange: {
 			type: Boolean,
 			default: uni.$u.props.picker.immediateChange
-		}
+		},
+        children_key_name: {
+            type: String,
+            default: 'children'
+        },
+        currentColumnIndex: {
+            type: Number,
+            default: 0,
+        },
+        currentColumnItemIndex: {
+            type: Number,
+            default: 0,
+        },
+        dataTypeIsObjectArray: {
+            type: Boolean,
+            default: false,
+        },
     }
 }

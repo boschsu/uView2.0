@@ -25,6 +25,25 @@
 				@change="changeHandler"
 			>
 				<picker-view-column
+					v-if="dataTypeIsObjectArray"
+					v-for="(level_in_depth, index) in checkDepth(innerColumns,'children')"
+					:key="index"
+					class="u-picker__view__column"
+				>
+					<text
+						class="u-picker__view__column__item u-line-1"
+						v-for="(item1, index1) in fetchedData(innerColumns, level_in_depth, children_key_name)"
+						:key="index1"
+						:style="{
+							height: $u.addUnit(itemHeight),
+							lineHeight: $u.addUnit(itemHeight),
+							fontWeight: index1 === innerIndex[index] ? 'bold' : 'normal'
+						}"
+					>{{ getItemText(item1) }}</text>
+				</picker-view-column>
+
+				<picker-view-column
+					v-else
 					v-for="(item, index) in innerColumns"
 					:key="index"
 					class="u-picker__view__column"
@@ -109,6 +128,48 @@ export default {
 		},
 	},
 	methods: {
+		fetchedData(innerColumns, level_in_depth, children_key_name) {
+			var that=this;
+			if (level_in_depth===1) {
+				return innerColumns
+			}else {
+				return getPath(level_in_depth)
+			}
+			function getPath(level) {
+				var result='';
+				var base = 'innerColumns';
+				var children_path = '['+0+']["'+children_key_name+'"]';
+				var current_column_index=that.currentColumnIndex+1;
+				for (var i=1;i<level;i++) {
+					console.log('level===that.currentColumnIndex', level, that.currentColumnIndex, that.currentColumnItemIndex)
+					if (i===current_column_index) {
+						result+=children_path.replace(0,that.currentColumnItemIndex)
+					}else {
+				    	result+=children_path
+				    }				    
+				}
+				console.log(base+result)
+				return eval(base+result);
+			}
+		},
+		checkDepth(obj, key_name, lastObj, depth) {
+			var result= lastObj || false;
+			var latestObj=null;
+			var depth=depth || 1;
+
+			if (result) {
+				latestObj=lastObj[0][key_name]
+			}else {
+				latestObj=obj[0][key_name]
+			}
+
+			if (latestObj instanceof Array) {
+				depth++;
+				return this.checkDepth(obj, key_name, latestObj, depth);
+			}else {
+				return depth;
+			}
+		},
 		// 获取item需要显示的文字，判别为对象还是文本
 		getItemText(item) {
 			if (uni.$u.test.object(item)) {
@@ -213,7 +274,12 @@ export default {
 			this.innerColumns = uni.$u.deepClone(columns)
 			// 如果在设置各列数据时，没有被设置默认的各列索引defaultIndex，那么用0去填充它，数组长度为列的数量
 			if (this.innerIndex.length === 0) {
-				this.innerIndex = new Array(columns.length).fill(0)
+				var depth = this.checkDepth(columns,this.children_key_name);
+				if (this.dataTypeIsObjectArray) {
+					this.innerIndex = new Array(depth).fill(0);
+				}else {
+					this.innerIndex = new Array(columns.length).fill(0)
+				}
 			}
 		},
 		// 获取各列选中值对应的索引
