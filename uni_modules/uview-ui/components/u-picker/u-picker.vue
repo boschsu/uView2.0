@@ -162,13 +162,23 @@ export default {
 			}else {
 				latestObj=obj[0][key_name]
 			}
-
+			// #ifdef APP-NVUE
+			console.log('Array.isArray(latestObj)', Array.isArray(latestObj))
+			if (Array.isArray(latestObj)) {
+				depth++;
+				return this.checkDepth(obj, key_name, latestObj, depth);
+			}else {
+				return depth;
+			}
+			// #endif
+			// #ifndef APP-NVUE
 			if (latestObj instanceof Array) {
 				depth++;
 				return this.checkDepth(obj, key_name, latestObj, depth);
 			}else {
 				return depth;
 			}
+			// #endif
 		},
 		// 获取item需要显示的文字，判别为对象还是文本
 		getItemText(item) {
@@ -274,9 +284,9 @@ export default {
 			this.innerColumns = uni.$u.deepClone(columns)
 			// 如果在设置各列数据时，没有被设置默认的各列索引defaultIndex，那么用0去填充它，数组长度为列的数量
 			if (this.innerIndex.length === 0) {
-				var depth = this.checkDepth(columns,this.children_key_name);
+				var depth = this.checkDepth(columns,this.children_key_name);				
 				if (this.dataTypeIsObjectArray) {
-					this.innerIndex = new Array(depth).fill(0);
+					this.innerIndex = new Array(depth).fill(0);					
 				}else {
 					this.innerIndex = new Array(columns.length).fill(0)
 				}
